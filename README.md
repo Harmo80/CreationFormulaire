@@ -22,10 +22,16 @@ Changelog et ToDoList
 
 [Fix][DOING] Vérification et protection des arguments en GET et des différentes étapes de création de formulaire.
 
+
 [Enh][TODO] Stylisation de l'interface de création.
+
 [Enh][TODO] Stylisation de la page d'accueil et de la page formulaire.
+
 [Fix][TODO] Correction des élèments dépendants qui ne fonctionnent pas. 
+
 [Enh][TODO] Enregistrement des résultats en Base de données ou envois par mail, au choix. Affichage par graphique ou simple.
+
 [Enh][TODO] Ajout Mdp (pour le créateur) pour consulter les résultats d'un formulaire. 
+
 
 [Enh][DONE] Ajout d'une page d'accueil.
