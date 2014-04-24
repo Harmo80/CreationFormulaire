@@ -18,6 +18,7 @@ $this->language = array(
     'other'         => 'Altro...',
     'select'        => '- Selezionare -',
     'spam_detected' => 'Rilevato possibile tentativo di spam. Il modulo inviato è stato rifiutato.',
+    'today'         => 'Oggi',
 
 );
 

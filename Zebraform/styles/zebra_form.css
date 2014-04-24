@@ -2,8 +2,8 @@
  *  STYLES FOR ZEBRA_FORM
  *******************************/
 
-.Zebra_Form,
-.Zebra_Form * {
+.Zebra_Form, .Zebra_Form label, .Zebra_Form input, .Zebra_Form select, .Zebra_Form textarea
+{
     font-family: inherit;
     font-size: inherit;
     margin: 0;
@@ -72,7 +72,7 @@
 .Zebra_Form input.text,
 .Zebra_Form select,
 .Zebra_Form textarea {
-    padding: 6px 5px 5px 5px
+    padding: 6px 5px
 }
 
 .Zebra_Form input.password:focus,
@@ -144,15 +144,11 @@
 .Zebra_Form input.reset,
 .Zebra_Form input.submit,
 .Zebra_Form label.button {
-    height: 29px;
-    background: url('button-background.gif') repeat-x top;
-    padding: 2px 10px 3px;
+    padding: 6px 20px;
+    background: #EFEFEF url('button-background.gif') repeat-x top;
     cursor: pointer;
     width: 1px; /* thanks to http://jehiah.cz/archive/button-width-in-ie */
     overflow: visible;
-    padding: 0 10px\9;
-    *padding: 1px 5px 0;
-    *height: 30px;
     width: auto;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
@@ -182,6 +178,11 @@
     read more at http://www.dracos.co.uk/code/ie6-css-bug/
     */
 }
+
+.Zebra_Form .row:before,
+.Zebra_Form .row:after     { content: "\0020"; display: block; height: 0; visibility: hidden; font-size: 0 }
+.Zebra_Form .row:after     { clear: both }
+.Zebra_Form .row           { *zoom: 1 } /* for IE only */
 
 .Zebra_Form table {
     border-collapse: collapse
@@ -277,8 +278,8 @@
     background: #000;
     padding: 10px 18px 10px 10px;
     color: #FFF;
-    line-height: 1em;
-    font-size: 11px;
+    line-height: inherit;
+    font-size: inherit;
     font-weight: normal;
     margin-right: 6px;
     position: relative;
@@ -472,7 +473,11 @@ input:-moz-placeholder { color:#9C9CA2 !important }
     _background-image: url('ico-refresh.gif')
 }
 
-.Zebra_Form div.Zebra_Form_Input_Prefix { color: #888; padding: 0; margin-right: 2px }
+.Zebra_Form .Zebra_Form_Input_Prefix {
+    color: #888;
+    padding: 0;
+    margin-right: 2px;
+}
 
 /* don't change this! */
 .Zebra_Form input.password { font-family: 'Verdana', 'Tahoma', 'Arial' }
@@ -481,8 +486,24 @@ input:-moz-placeholder { color:#9C9CA2 !important }
  *  STYLES FOR ZEBRA_DATEPICKER
  *******************************/
 
-.Zebra_DatePicker *                          { margin: 0; padding: 0; color: #000 }
-.Zebra_DatePicker                            { position: absolute; background: #666; border: 3px solid #666; -webkit-border-radius: 4px; -moz-border-radius: 4px; border-radius: 4px; display: none; z-index: 100; font-family: Tahoma, Arial, Helvetica, sans-serif; font-size: 13px }
+/*
+
+    Zebra_DatePicker: a lightweight jQuery date picker plugin
+
+    Default theme
+
+    copyright (c) 2011 - 2013 Stefan Gabos
+    http://stefangabos.ro/jquery/zebra-datepicker/
+
+*/
+
+.Zebra_DatePicker *,
+.Zebra_DatePicker *:after,
+.Zebra_DatePicker *:before  { -moz-box-sizing: content-box !important; -webkit-box-sizing: content-box !important; box-sizing: content-box !important }
+
+.Zebra_DatePicker           { position: absolute; background: #666; border: 3px solid #666; display: none; z-index: 100; font-family: Tahoma, Arial, Helvetica, sans-serif; font-size: 13px }
+
+.Zebra_DatePicker *         { margin: 0; padding: 0; color: #000; background: transparent; border: none }
 
 /* = GLOBALS
 ----------------------------------------------------------------------------------------------------------------------*/
@@ -502,6 +523,10 @@ input:-moz-placeholder { color:#9C9CA2 !important }
 .Zebra_DatePicker .dp_monthpicker td,
 .Zebra_DatePicker .dp_yearpicker td         { background: #E8E8E8; width: 30px; border: 1px solid #7BACD2 }
 
+.Zebra_DatePicker,
+.Zebra_DatePicker .dp_header .dp_hover,
+.Zebra_DatePicker .dp_footer .dp_hover { -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px }
+
 /* = HEADER
 ----------------------------------------------------------------------------------------------------------------------*/
 .Zebra_DatePicker .dp_header td             { color: #FFF }
@@ -510,31 +535,39 @@ input:-moz-placeholder { color:#9C9CA2 !important }
 .Zebra_DatePicker .dp_header .dp_next       { width: 30px }
 
 .Zebra_DatePicker .dp_header .dp_caption    { font-weight: bold }
-.Zebra_DatePicker .dp_header .dp_hover      { background: #222; color: #FFF; -webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px }
+.Zebra_DatePicker .dp_header .dp_hover      { background: #222; color: #FFF }
 .Zebra_DatePicker .dp_header .dp_blocked    { color: #888; cursor: default }
 
 /* = DATEPICKER
 ----------------------------------------------------------------------------------------------------------------------*/
-.Zebra_DatePicker .dp_daypicker th          { background: #FFCC33 }
-.Zebra_DatePicker td.dp_not_in_month        { background: #F3F3F3; color: #CDCDCD; cursor: default }
-.Zebra_DatePicker td.dp_weekend             { background: #D8D8D8 }
-.Zebra_DatePicker td.dp_weekend_disabled    { color: #CCC; cursor: default }
-.Zebra_DatePicker td.dp_selected            { background: #5A4B4B; color: #FFF !important }
-.Zebra_DatePicker td.dp_week_number         { background: #FFCC33; color: #555; cursor: text; font-style: italic }
+.Zebra_DatePicker .dp_daypicker th              { background: #FFCC33 }
+.Zebra_DatePicker td.dp_not_in_month            { background: #F3F3F3; color: #CDCDCD; cursor: default }
+.Zebra_DatePicker td.dp_not_in_month_selectable { background: #F3F3F3; color: #CDCDCD; cursor: pointer }
+.Zebra_DatePicker td.dp_weekend                 { background: #D8D8D8 }
+.Zebra_DatePicker td.dp_weekend_disabled        { color: #CCC; cursor: default }
+.Zebra_DatePicker td.dp_selected                { background: #5A4B4B; color: #FFF !important }
+.Zebra_DatePicker td.dp_week_number             { background: #FFCC33; color: #555; cursor: text; font-style: italic }
 
 /* = MONTHPICKER
 ----------------------------------------------------------------------------------------------------------------------*/
-.Zebra_DatePicker .dp_monthpicker td        { width: 33% }
+.Zebra_DatePicker .dp_monthpicker td    { width: 33% }
 
 /* = YEARPICKER
 ----------------------------------------------------------------------------------------------------------------------*/
-.Zebra_DatePicker .dp_yearpicker td         { width: 33% }
+.Zebra_DatePicker .dp_yearpicker td     { width: 33% }
 
 /* = FOOTER
 ----------------------------------------------------------------------------------------------------------------------*/
-.Zebra_DatePicker .dp_footer                { margin-top: 3px }
-.Zebra_DatePicker .dp_footer td             { color: #FFF; padding: 2px; font-weight: bold }
-.Zebra_DatePicker .dp_footer .dp_hover      { background: #222; color: #FFF; -webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px }
+.Zebra_DatePicker .dp_footer            { margin-top: 3px }
+.Zebra_DatePicker .dp_footer .dp_hover  { background: #222; color: #FFF }
+
+/* = SELECT CURRENT DAY
+----------------------------------------------------------------------------------------------------------------------*/
+.Zebra_DatePicker .dp_today { color: #FFF; padding: 3px }
+
+/* = CLEAR DATE
+----------------------------------------------------------------------------------------------------------------------*/
+.Zebra_DatePicker .dp_clear { color: #FFF; padding: 3px }
 
 /* = SOME MORE GLOBALS (MUST BE LAST IN ORDER TO OVERWRITE PREVIOUS PROPERTIES)
 ----------------------------------------------------------------------------------------------------------------------*/
@@ -545,11 +578,9 @@ input:-moz-placeholder { color:#9C9CA2 !important }
 
 /* = ICON
 ----------------------------------------------------------------------------------------------------------------------*/
-button.Zebra_DatePicker_Icon                { position: absolute; width: 16px; height: 16px; background: url('calendar.png') no-repeat left top; text-indent: -9000px; border: none; cursor: pointer; margin: 0 0 0 5px; padding: 0; line-height: 0 }
+button.Zebra_DatePicker_Icon                { display: block; position: absolute; width: 16px; height: 16px; background: url('calendar.png') no-repeat left top; text-indent: -9000px; border: none; cursor: pointer; padding: 0; line-height: 0; vertical-align: top }
 button.Zebra_DatePicker_Icon_Disabled       { background-image: url('calendar-disabled.png') }
-button.Zebra_DatePicker_Icon_Inside         { margin: 0 3px 0 0 }
 
-/* Fix icon position in Chrome & Safari */
-@media screen and (-webkit-min-device-pixel-ratio:0) {
-    button.Zebra_DatePicker_Icon_Inside     { margin: 0 5px 0 0 }
-}
+/* don't set vertical margins! */
+button.Zebra_DatePicker_Icon                { margin: 0 0 0 3px }
+button.Zebra_DatePicker_Icon_Inside         { margin: 0 3px 0 0 }

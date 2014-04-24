@@ -19,6 +19,7 @@ $this->language = array(
     'other'         => 'Alta...',
     'select'        => '- alege -',
     'spam_detected' => 'Posibila incercare de spam detectata. Datele trimise in formular au fost respinse.',
+    'today'         => 'Astazi',
 
 );
 

@@ -27,7 +27,7 @@ define('ZEBRA_FORM_UPLOAD_RANDOM_NAMES', false);
  *  For more resources visit {@link http://stefangabos.ro/}
  *
  *  @author     Stefan Gabos <contact@stefangabos.ro>
- *  @version    2.9.1 (last revision: March 10, 2013)
+ *  @version    2.9.4 (last revision: August 23, 2013)
  *  @copyright  (c) 2006 - 2013 Stefan Gabos
  *  @license    http://www.gnu.org/licenses/lgpl-3.0.txt GNU LESSER GENERAL PUBLIC LICENSE
  *  @package    Zebra_Form
@@ -194,6 +194,7 @@ class Zebra_Form
             'method'                    =>  strtoupper($method),
             'name'                      =>  $name,
             'other_suffix'              =>  '_other',
+            'secret_key'                =>  '',
             'show_all_error_messages'   =>  false,
 
         );
@@ -338,7 +339,7 @@ class Zebra_Form
                 }
 
                 if (func_num_args() >= 5) $additional = func_get_arg(4);
-                    
+
                 $counter = 0;
 
                 // iterate through values and their respective labels
@@ -658,11 +659,12 @@ class Zebra_Form
     /**
      *  Sets the storage method for CAPTCHA values.
      *
-     *  By default, captcha values are triple md5 hashed and stored in cookies and when the user enters the captcha
-     *  value, the value is also triple md5 hashed, and the two values are then compared.
+     *  By default, captcha values are triple md5 hashed and stored in cookies, and when the user enters the captcha
+     *  value the value is also triple md5 hashed and the two values are then compared.
      *
-     *  The drawback is that if users have a very restrictive cookie policy then the cookie will not be set, and users
-     *  will never be able to get past the CAPTCHA control.
+     *  Sometimes, your users may have a very restrictive cookie policy and so cookies will not be set, and therefore,
+     *  they will never be able to get past the CAPTCHA control. If it's the case, call this method and set the storage
+     *  method to "session".
      *
      *  In this case, call this method and set the the storage method to "session".
      *
@@ -697,7 +699,9 @@ class Zebra_Form
      */
     function client_side_validation($properties)
     {
+
         $this->clientside_validation($properties);
+
     }
 
     /**
@@ -717,11 +721,13 @@ class Zebra_Form
      *
      *  // enable client-side validation using customized properties
      *  $form->clientside_validation(array(
-     *      'scroll_to_error'       =>  false,      //  don't scroll the browser window to the error message
-     *      'tips_position'         =>  'right',    //  position tips with error messages to the right of the controls
-     *      'close_tips'            =>  false,      //  don't show a "close" button on tips with error messages
-     *      'validate_on_the_fly'   =>  false,      //  don't validate controls on the fly
-     *      'validate_all'          =>  false,      //  show error messages one by one upon trying to submit an invalid form
+     *      'close_tips'                =>  false,      //  don't show a "close" button on tips with error messages
+     *      'on_ready'                  =>  false,      //  no function to be executed when the form is ready
+     *      'disable_upload_validation' =>  true,       //  using a custom plugin for managing file uploads
+     *      'scroll_to_error'           =>  false,      //  don't scroll the browser window to the error message
+     *      'tips_position'             =>  'right',    //  position tips with error messages to the right of the controls
+     *      'validate_on_the_fly'       =>  false,      //  don't validate controls on the fly
+     *      'validate_all'              =>  false,      //  show error messages one by one upon trying to submit an invalid form
      *  ));
      *  </code>
      *
@@ -732,7 +738,8 @@ class Zebra_Form
      *
      *  From JavaScript, these are the methods that can be called on this object:
      *
-     *  -   <b>attach_tip(element, message)</b> -   displays a custom error message, attached to the indicated jQuery element;
+     *  -   <b>attach_tip(element, message)</b> -   displays a custom error message, attached to the element with the
+     *                                              indicated ID (so, remember, "element" is string, not an object!)
      *  -   <b>clear_errors()</b>               -   hides all error messages;
      *  -   <b>submit()</b>                     -   submits the form;
      *  -   <b>validate()</b>                   -   checks if the form is valid; returns TRUE or FALSE;
@@ -767,32 +774,55 @@ class Zebra_Form
      *  </code>
      *
      *  @param  mixed   $properties     Can have the following values:
+     *
      *                                  -   FALSE, disabling the client-side validation;
      *                                      <i>Note that the {@link Zebra_Form_Control::set_rule() dependencies} rule will
      *                                      still be checked client-side so that callback functions get called, if it is
      *                                      the case!</i>
      *                                  -   TRUE, enabling the client-side validation with the default properties;
+     *
      *                                  -   an associative array with customized properties for the client-side validation;
      *
      *                                  In this last case, the available properties are:
+     *
+     *                                  -   <b>close_tips</b>, boolean, TRUE or FALSE<br>
+     *                                      Specifies whether the tips with error messages should have a "close" button
+     *                                      or not<br>
+     *                                      Default is <b>TRUE</b>.
+     *
+     *                                  -   <b>disable_upload_validation</b>, boolean, TRUE or FALSE<br>
+     *                                      Useful for disabling all client-side processing of file upload controls, so
+     *                                      that custom plugins may be used for it (like, for instance,
+     *                                      {@link http://blueimp.github.io/jQuery-File-Upload/basic.html this one})
+     *                                      Default is <b>FALSE</b>.
+     *
+     *                                  -   <b>on_ready</b>, JavaScript function to be executed when the form is loaded.
+     *                                      Useful for getting a reference to the Zebra_Form object after everything is
+     *                                      loaded.
+     *
+     *                                      <code>
+     *                                      $form->clientside_validation(array(
+     *                                          // where $form is a global variable and 'id' is the form's id
+     *                                          'on_ready': 'function() { $form = $("#id").data('Zebra_Form'); }',
+     *                                      ));
+     *                                      </code>
      *
      *                                  -   <b>scroll_to_error</b>, boolean, TRUE or FALSE<br>
      *                                      Specifies whether the browser window should be scrolled to the error message
      *                                      or not.<br>
      *                                      Default is <b>TRUE</b>.
+     *
      *                                  -   <b>tips_position</b>, string, <i>left</i> or <i>right</i><br>
      *                                      Specifies where the error message tip should be positioned relative to the
      *                                      control.<br>
      *                                      Default is <b>left</b>.
-     *                                  -   <b>close_tips</b>, boolean, TRUE or FALSE<br>
-     *                                      Specifies whether the tips with error messages should have a "close" button
-     *                                      or not<br>
-     *                                      Default is <b>TRUE</b>.
+     *
      *                                  -   <b>validate_on_the_fly</b>, boolean, TRUE or FALSE<br>
      *                                      Specifies whether values should be validated as soon as the user leaves a
      *                                      field; if set to TRUE and the validation of the control fails, the error
      *                                      message will be shown right away<br>
      *                                      Default is <b>FALSE</b>.
+     *
      *                                  -   <b>validate_all</b>, boolean, TRUE or FALSE<br>
      *                                      Specifies whether upon submitting the form, should all error messages be
      *                                      shown at once if there are any errors<br>
@@ -805,12 +835,14 @@ class Zebra_Form
 
         // default properties of the client-side validation
         $defaults = array(
-            'clientside_disabled'   =>  false,
-            'close_tips'            =>  true,
-            'scroll_to_error'       =>  true,
-            'tips_position'         =>  'left',
-            'validate_on_the_fly'   =>  false,
-            'validate_all'          =>  false,
+            'clientside_disabled'       =>  false,
+            'close_tips'                =>  true,
+            'disable_upload_validation' =>  false,
+            'on_ready'                  =>  false,
+            'scroll_to_error'           =>  true,
+            'tips_position'             =>  'left',
+            'validate_on_the_fly'       =>  false,
+            'validate_all'              =>  false,
         );
 
         // set the default properties for the client-side validation
@@ -991,13 +1023,15 @@ class Zebra_Form
             $this->form_properties['csrf_storage_method'] = strtolower(trim($csrf_storage_method));
 
             // if the script should decide what method to use and a session is already started
-            if ($this->form_properties['csrf_storage_method'] == 'auto')
+            if ($this->form_properties['csrf_storage_method'] == 'auto') {
 
                 // use sessions as storage method
                 if (isset($_SESSION)) $this->form_properties['csrf_storage_method'] = 'session';
 
                 // if a session is not already started, use cookies as storage method
                 else $this->form_properties['csrf_storage_method'] = 'cookie';
+
+            }
 
             // set the life time of the CSRF token
             $this->form_properties['csrf_token_lifetime'] = ($csrf_token_lifetime <= 0 ? 0 : $csrf_token_lifetime);
@@ -1099,7 +1133,7 @@ class Zebra_Form
      *
      *  @return mixed                   Returns or displays the rendered form.
      */
-    function render($template = '', $return = false, $variables = '')
+    function render($template = '', $return = true, $variables = '')
     {
 
         // if
@@ -1117,7 +1151,7 @@ class Zebra_Form
             // we inform the user about that
             _zebra_form_show_error('<strong>Zebra_Form</strong> could not automatically determine the correct path to the "process.php"
             and "mimes.json" files - this may happen if the script is run on a virtual host. To fix this, use the <u>assets_path()</u>
-            method and manually set the correct <strong>server path</strong> and <strong>URL</strong> to these files ', E_USER_ERROR);
+            method and manually set the correct <strong>server path</strong> and <strong>URL</strong> to these file!', E_USER_ERROR);
 
         // if variables is an array
         if (is_array($variables))
@@ -1163,7 +1197,7 @@ class Zebra_Form
             $this->add('hidden', 'MAX_FILE_SIZE', $this->form_properties['max_file_size']);
 
             // if client-side validation is not disabled
-            if (!$this->form_properties['clientside_validation']['clientside_disabled'])
+            if (!$this->form_properties['clientside_validation']['clientside_disabled'] && !$this->form_properties['clientside_validation']['disable_upload_validation'])
 
                 // add a new property for the client-side validation
                 $this->clientside_validation(array('assets_path' => rawurlencode($this->form_properties['assets_url'])));
@@ -1215,8 +1249,9 @@ class Zebra_Form
             // if control has any rules attached to it
             if (!empty($control->rules)) {
 
-                // if variable not created yet, create the variable holding client-side error messages
-                if (!isset($clientside_validation)) $clientside_validation = array();
+                // if client-side validation is not disabled and this variable not created yet,
+                // create the variable holding client-side error messages
+                if (!$this->form_properties['clientside_validation']['clientside_disabled'] && !isset($clientside_validation)) $clientside_validation = array();
 
                 // we need to make sure that rules are in propper order, the order of priority being "dependencies",
                 // "required" and "upload"
@@ -1258,7 +1293,18 @@ class Zebra_Form
                 foreach ($control->rules as $rule => $properties) {
 
                     // these rules are not checked client side
-                    if ($rule == 'captcha' || $rule == 'convert' || $rule == 'resize') continue;
+                    if (
+
+                        $rule == 'captcha' || $rule == 'convert' || $rule == 'resize' ||
+
+                        // also, if we're not checking files clientside, also ignore these rules
+                        (
+                            !$this->form_properties['clientside_validation']['clientside_disabled'] &&
+                            $this->form_properties['clientside_validation']['disable_upload_validation'] &&
+                            in_array($rule, array('upload', 'filetype', 'filesize', 'image'))
+                        )
+
+                    ) continue;
 
                     // we need to remove the error_block part as it is not needed for client-side validation
                     switch ($rule) {
@@ -1306,8 +1352,11 @@ class Zebra_Form
                                 // we also set the "maxlength" attribute of the control
                                 $this->controls[$key]->set_attributes(array('maxlength' => $properties[1]));
 
-                            // for text and textarea elements make sure the default value, if there is one, is not longer than the maximum allowed length
-                            if (in_array($attributes['type'], array('text', 'textarea'))) $control->set_attributes(array('value' => substr($control->attributes['value'], 0, $properties[1])));
+                            // fot the "length" rule, for text and textarea elements
+                            if ($rule == 'length' && in_array($attributes['type'], array('text', 'textarea')))
+
+                                // make sure the default value, if there is one, is not longer than the maximum allowed length
+                                $control->set_attributes(array('value' => substr($control->attributes['value'], 0, $properties[1])));
 
                             break;
 
@@ -1325,8 +1374,11 @@ class Zebra_Form
 
                     }
 
-                    // this array will be fed to the JavaScript as a JSON
-                    $clientside_validation[$attributes['name']][$rule] = $properties;
+                    // if client-side validation is not disabled
+                    if (!$this->form_properties['clientside_validation']['clientside_disabled'])
+
+                        // this array will be fed to the JavaScript as a JSON
+                        $clientside_validation[$attributes['name']][$rule] = $properties;
 
                 }
 
@@ -1397,15 +1449,23 @@ class Zebra_Form
                     // append the new date picker object
                     $datepicker_javascript .= '$(\'#' . $attributes['id'] . '\').Zebra_DatePicker(';
 
+                    // take day names from the language file
                     $control->attributes['days'] = $this->form_properties['language']['days'];
 
+                    // if we have custom day name abbreviations, use them
                     if (is_array($this->form_properties['language']['days_abbr'])) $control->attributes['days_abbr'] = $this->form_properties['language']['days_abbr'];
 
+                    // take month names from the language file
                     $control->attributes['months'] = $this->form_properties['language']['months'];
 
+                    // if we have custom month abbreviations, use them
                     if (is_array($this->form_properties['language']['months_abbr'])) $control->attributes['months_abbr'] = $this->form_properties['language']['months_abbr'];
 
+                    // use the caption from the language file for the "Clear date" button
                     $control->attributes['lang_clear_date'] = $this->form_properties['language']['clear_date'];
+
+                    // if the "Today" button is not disabled use the caption from the language file
+                    if ($control->attributes['show_select_today'] === null) $control->attributes['show_select_today'] = $this->form_properties['language']['today'];
 
                     $properties = '';
 
@@ -1439,8 +1499,8 @@ class Zebra_Form
                             // if value is a string but is not a javascript object
                             } elseif (is_string($value) && !preg_match('/^\{.*\}$/', trim($value)))
 
-                                // format accordingly
-                                $properties .= '\'' . $value . '\'';
+                                // format accordingly and escape single quotes or we'll kill JavaScript
+                                $properties .= '\'' . addcslashes($value, '\'') . '\'';
 
                             // for any other case (javascript object, boolean)
                             else
@@ -2102,16 +2162,30 @@ class Zebra_Form
         // this will hold the properties to be set for the JavaScript object
         $javascript_object_properties = '';
 
-        // iterate through the properties
-        foreach ($this->form_properties['clientside_validation'] as $key => $value)
+        // if client-side validation is disabled
+        if ($this->form_properties['clientside_validation']['clientside_disabled']) {
 
-            // save property
-            $javascript_object_properties .=
-                ($javascript_object_properties != '' ? ',' : '') . $key . ':' .
-                ($value === true ? 'true' : ($value === false ? 'false' : '\'' . $value . '\''));
+            // we still need to execute a function attached to the "on_ready" event (if any)
+            $javascript_object_properties .= 'on_ready:' . ($this->form_properties['clientside_validation']['on_ready'] === false ? 'false' : $this->form_properties['clientside_validation']['on_ready']);
 
-        // save information about validation rules
-        $javascript_object_properties .= ($javascript_object_properties != '' ? ',' : '') . 'validation_rules:' . (isset($clientside_validation) ? json_encode($clientside_validation) : '{}');
+            // so we don't break the JavaScript code, we need this, too
+            $javascript_object_properties .= ',validation_rules:{}';
+
+        // if client-side validation is not disabled
+        } else {
+
+            // iterate through the properties
+            foreach ($this->form_properties['clientside_validation'] as $key => $value)
+
+                // save property
+                $javascript_object_properties .=
+                    ($javascript_object_properties != '' ? ',' : '') . $key . ':' .
+                    ($value === true ? 'true' : ($value === false ? 'false' : ($key == 'on_ready' ? $value : '\'' . $value . '\'')));
+
+            // save information about validation rules
+            $javascript_object_properties .= ($javascript_object_properties != '' ? ',' : '') . 'validation_rules:' . (isset($clientside_validation) ? json_encode($clientside_validation) : '{}');
+
+        }
 
         // function name for initializing client-side validation
         $function_name = 'init_' . md5(strtolower($this->form_properties['name'] . microtime()));
@@ -2124,11 +2198,14 @@ class Zebra_Form
             '$("#' . $this->form_properties['name'] . '").Zebra_Form(' . ($javascript_object_properties != '' ? '{' . $javascript_object_properties . '}' : '') . ')})}}' .
             $function_name . '()</script>';
 
-        // if $return argument was TRUE, return the result
+        /*// if $return argument was TRUE, return the result
         if ($return) return $output;
 
         // if $return argument was FALSE, output the content
-        else echo $output;
+        else echo $output;*/
+
+        // Modification pour HarmoFWK, on retourne le résultat HTML pour pouvoir l'inclure et le gérer dans Smarty
+        return $output;
 
     }
 
@@ -2765,7 +2842,7 @@ class Zebra_Form
 
                                 // control does not contain only letters from the alphabet (and other allowed characters, if any)
                                 // we're also fixing a bug where in PHP prior to 5.3, preg_quote was not escaping dashes (-)
-                                !preg_match('/^[a-z' . preg_replace('/(?<!\\\)\-/', '\-', preg_quote($rule_attributes[0])) . ']+$/i', $attribute['value'])
+                                !preg_match('/^[a-z' . preg_replace('/\//', '\/', preg_replace('/(?<!\\\)\-/', '\-', preg_quote($rule_attributes[0]))) . ']+$/i', $attribute['value'])
 
                             ) {
 
@@ -2805,7 +2882,7 @@ class Zebra_Form
 
                                 // control does not contain only allowed characters
                                 // we're also fixing a bug where in PHP prior to 5.3, preg_quote was not escaping dashes (-)
-                                !preg_match('/^[a-z0-9' . preg_replace('/(?<!\\\)\-/', '\-', preg_quote($rule_attributes[0])) . ']+$/i', $attribute['value'])
+                                !preg_match('/^[a-z0-9' . preg_replace('/\//', '\/', preg_replace('/(?<!\\\)\-/', '\-', preg_quote($rule_attributes[0]))) . ']+$/i', $attribute['value'])
 
                             ) {
 
@@ -3116,7 +3193,7 @@ class Zebra_Form
 
                                 // but entered value does not contain digits only (and other allowed characters, if any)
                                 // we're also fixing a bug where in PHP prior to 5.3, preg_quote was not escaping dashes (-)
-                                !preg_match('/^[0-9' . preg_replace('/(?<!\\\)\-/', '\-', preg_quote($rule_attributes[0])) . ']+$/', $attribute['value'])
+                                !preg_match('/^[0-9' . preg_replace('/\//', '\/', preg_replace('/(?<!\\\)\-/', '\-', preg_quote($rule_attributes[0]))) . ']+$/', $attribute['value'])
 
                             ) {
 
@@ -3375,7 +3452,7 @@ class Zebra_Form
 
                                     // not a floating point number
                                     // we're also fixing a bug where in PHP prior to 5.3, preg_quote was not escaping dashes (-)
-                                    !preg_match('/^[0-9\-\.' . preg_replace('/(?<!\\\)\-/', '\-', preg_quote($rule_attributes[0])) . ']+$/', $attribute['value']) ||
+                                    !preg_match('/^[0-9\-\.' . preg_replace('/\//', '\/', preg_replace('/(?<!\\\)\-/', '\-', preg_quote($rule_attributes[0]))) . ']+$/', $attribute['value']) ||
 
                                     // has a minus sign in it but is not at the very beginning
                                     (strpos($attribute['value'], '-') !== false && strpos($attribute['value'], '-') > 0)
@@ -3513,7 +3590,7 @@ class Zebra_Form
 
                                     // not a number
                                     // we're also fixing a bug where in PHP prior to 5.3, preg_quote was not escaping dashes (-)
-                                    !preg_match('/^[0-9\-' . preg_replace('/(?<!\\\)\-/', '\-', preg_quote($rule_attributes[0])) . ']+$/', $attribute['value']) ||
+                                    !preg_match('/^[0-9\-' . preg_replace('/\//', '\/', preg_replace('/(?<!\\\)\-/', '\-', preg_quote($rule_attributes[0]))) . ']+$/', $attribute['value']) ||
 
                                     // has a minus sign in it but is not at the very beginning
                                     (strpos($attribute['value'], '-') !== false && strpos($attribute['value'], '-') > 0)
@@ -4049,6 +4126,9 @@ class Zebra_Form
     private function _convert($control, $type, $jpeg_quality = 85, $preserve_original_file = false, $overwrite = false)
     {
 
+        // make sure the new extension is in lowercase
+        $type = strtolower($type);
+
         // if
         if (
 
@@ -4067,13 +4147,10 @@ class Zebra_Form
             $current_file_name = substr($this->file_upload[$control]['file_name'], 0, strrpos($this->file_upload[$control]['file_name'], '.'));
 
             // get file's current extension
-            $current_file_extension = strtolower(substr($this->file_upload[$control]['file_name'], strrpos($this->file_upload[$control]['file_name'] + 1, '.')));
+            $current_file_extension = strtolower(substr($this->file_upload[$control]['file_name'], strrpos($this->file_upload[$control]['file_name'], '.') + 1));
 
             // if extension is a variation of "jpeg", revert to default "jpg"
             if ($current_file_extension == 'jpeg') $current_file_extension = 'jpg';
-
-            // make sure the new extension is also lowercase
-            $type = strtolower($type);
 
             // if new extension is different than the file's current extension
             if ($type != $current_file_extension) {
@@ -4161,7 +4238,7 @@ class Zebra_Form
                 $this->file_upload[$control]['type'] = $imageinfo['mime'];
 
                 // if original file is not to be preserved, delete original file
-                if (!$preserve_original_file && !$overwrite) @unlink($this->Zebra_Image->source_path);
+                if (!$preserve_original_file && (!$overwrite || $type != $current_file_extension)) @unlink($this->Zebra_Image->source_path);
 
             }
 
@@ -4517,11 +4594,18 @@ class Zebra_Form
 
                     // a proxy may also depend on the values of or or more other proxies
                     // therefore, continue only if those conditions are met
-                    if (isset($method[$proxy]) && $this->_validate_dependencies($proxy, $referer)) {
+                    if (
+                        isset($this->controls[$proxy]) &&
+                        (($this->controls[$proxy]->attributes['type'] == 'image' && isset($method[$proxy . '_x']) && isset($method[$proxy . '_y'])) || isset($method[$proxy])) &&
+                        $this->_validate_dependencies($proxy, $referer)
+                    ) {
 
-                        // get the proxy's current value/values
+                        // if proxy is a submit or an image submit button
+                        if (in_array($this->controls[$proxy]->attributes['type'], array('image', 'submit'))) $current_values = array('click');
+
+                        // otherwise, get the proxy's current value/values
                         // (we'll treat the values as an array even if there's only a single value)
-                        $current_values = !is_array($method[$proxy]) ? array($method[$proxy]) : $method[$proxy];
+                        else $current_values = !is_array($method[$proxy]) ? array($method[$proxy]) : $method[$proxy];
 
                         // if condition is not an array
                         if (!is_array($required_values)) {
@@ -4627,44 +4711,11 @@ class Zebra_Form
     private function _upload($control, $upload_path, $filename = true)
     {
 
-        // make sure the upload path doesn't start with "."
-        $upload_path = ltrim($upload_path, '.');
+        // trim trailing slash from folder
+        $path = rtrim($upload_path, '\\/');
 
-        // if upload path starts with "/" it means that the upload path is relative to the DOCUMENT_ROOT
-        if (strpos($upload_path, '/') === 0)
-
-            $path = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/' . trim($upload_path, '/') . '/';
-
-        // if upload path doesn't start with "/" it means the upload path is relative to the path of
-        // page containing the caller form
-        else {
-
-            // get the path of the file containing the caller form
-            // (this will be relative to the DOCUMENT_ROOT)
-
-            $server_path = dirname(parse_url($_SERVER['PHP_SELF'], PHP_URL_PATH));
-
-            // get folders as an array
-            // and remove empty entries
-            $server_path = explode('/', $server_path);
-            $server_path = array_diff($server_path, array(''));
-
-            // get the number of "../" in the prefix of the upload path
-            // (if there is a ../ as prefix it means that the path is relative to the )
-            $occurences = 0;
-            if (preg_match_all('/^(\.\.\/)+/', $upload_path, $matches))
-                $occurences = count(array_diff(explode('../', $matches[0][0]), array())) - 1;
-
-            // now remove as many items from the array as there are "../" in the upload path
-            if ($occurences > 0) $server_path = array_slice($server_path, 0, -$occurences);
-
-            // also, remove all the "../" from the upload path's prefix
-            $upload_path = preg_replace('/^(\.\.\/)+/', '', $upload_path);
-
-            // the final path where to upload the file, relative to the DOCUMENT_ROOT
-            $path = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/' . (!empty($server_path) ? implode('/', $server_path) . '/' : '') . (trim($upload_path) != '' ? $upload_path . '/' : '');
-
-        }
+        // if upload folder does not have a trailing slash, add the trailing slash
+        $path = $path . (substr($path, -1) != DIRECTORY_SEPARATOR ? DIRECTORY_SEPARATOR : '');
 
         // if
         if (
@@ -4764,7 +4815,7 @@ class Zebra_Form
                 // the value of the property will be an array will information about the uploaded file
                 $this->file_upload[$control] = $_FILES[$control];
 
-                $this->file_upload[$control]['path'] = $upload_path;
+                $this->file_upload[$control]['path'] = rtrim($upload_path, '/') . '/';
 
                 $this->file_upload[$control]['file_name'] = $file_name;
 
@@ -4835,7 +4886,7 @@ function _zebra_form_show_error($message, $type)
         $errorInfo = @array_pop(array_slice($backtraceInfo, 2, 1));
 
         // show error message
-        echo '<br><strong>' . ($type == E_USER_WARNING ? 'Warning' : ($type == E_USER_NOTICE ? 'Notice' : 'Fatal error')) . '</strong>:  ' . $message . (isset($errorInfo['file']) ? ' in <strong>' . basename($errorInfo['file']) . '</strong> on line <strong>' . $errorInfo['line'] .  '</strong>' : '') . '<br>';
+        echo '<br><strong>' . ($type == E_USER_WARNING ? 'Warning' : ($type == E_USER_NOTICE ? 'Notice' : 'Fatal error')) . '</strong>:<br><br>' . $message . (isset($errorInfo['file']) ? '<br><br>in <strong>' . basename($errorInfo['file']) . '</strong> on line <strong>' . $errorInfo['line'] .  '</strong>' : '') . '<br>';
 
         // die if necessary
         if ($type == E_USER_ERROR) die();

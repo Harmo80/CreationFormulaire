@@ -178,8 +178,7 @@ if (isset($_GET['captcha']) && ($_GET['captcha'] == 1 || $_GET['captcha'] == 2))
     !empty($_FILES) &&
     isset($_GET['form']) &&
     isset($_GET['control']) &&
-    isset($_FILES[$_GET['control']]) &&
-    isset($_GET['path'])
+    isset($_FILES[$_GET['control']])
 
 ) {
 
@@ -191,55 +190,13 @@ if (isset($_GET['captcha']) && ($_GET['captcha'] == 1 || $_GET['captcha'] == 2))
         // the file upload control on the form that initiated the request
         $control = $_GET['control'];
 
-        // make sure the upload path doesn't start with "."
-        $upload_path = ltrim($_GET['path'], '.');
-
-        // if upload path starts with "/" it means that the upload path is relative to the DOCUMENT_ROOT
-        if (strpos($upload_path, '/') === 0)
-
-            $path = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/' . trim($upload_path, '/') . '/';
-
-        // if upload path doesn't start with "/" it means the upload path is relative to the path of
-        // page containing the caller form
-        else {
-
-            // get the path of the file containing the caller form
-            // (this will be relative to the DOCUMENT_ROOT)
-
-            $server_path = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH);
-
-            // get folders as an array
-            // and remove empty entries
-            $server_path = explode('/', $server_path);
-            $server_path = array_diff($server_path, array(''));
-
-            // if last entry is a file with an extension, remove it from the list
-            if (strpos($server_path[count($server_path)], '.') !== false) array_pop($server_path);
-
-            // get the number of "../" in the prefix of the upload path
-            // (if there is a ../ as prefix it means that the path is relative to the )
-            $occurences = 0;
-            if (preg_match_all('/^(\.\.\/)+/', $upload_path, $matches))
-                $occurences = count(array_diff(explode('../', $matches[0][0]), array())) - 1;
-
-            // now remove as many items from the array as there are "../" in the upload path
-            if ($occurences > 0) $server_path = array_slice($upload_path, 0, -$occurences);
-
-            // also, remove all the "../" from the upload path's prefix
-            $upload_path = preg_replace('/^(\.\.\/)+/', '', $upload_path);
-
-            // the final path where to upload the file, relative to the DOCUMENT_ROOT
-            $path = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/' . (!empty($server_path) ? implode('/', $server_path) . '/' : '') . (trim($upload_path) != '' ? $upload_path . '/' : '');
-
-        }
-
         // if file could be uploaded
         if (isset($_FILES[$_GET['control']])) {
 
             // save some information about the uploaded file
             $file['name'] = $_FILES[$control]['name'];
             $file['type'] = $_FILES[$control]['type'];
-            $file['error'] = (!file_exists($path) || !is_dir($path) ? -1 : $_FILES[$control]['error']);   // is the upload path valid?
+            $file['error'] = $_FILES[$control]['error'];
             $file['size'] = $_FILES[$control]['size'];
 
         // if there were problems uploading the file

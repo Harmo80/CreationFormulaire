@@ -302,26 +302,20 @@ class Zebra_Form_Control extends XSS_Clean
                         // strip those slashes
                         if (get_magic_quotes_gpc()) $this->submitted_value = stripslashes($this->submitted_value);
 
-                    // since 1.1
-                    // if XSS filtering is not disabled
-                    if ($attribute['disable_xss_filters'] !== true) {
+                    // if submitted value is an array
+                    if (is_array($this->submitted_value))
 
-                        // if submitted value is an array
-                        if (is_array($this->submitted_value))
+                        // iterate through the submitted values
+                        foreach ($this->submitted_value as $key => $value)
 
-                            // iterate through the submitted values
-                            foreach ($this->submitted_value as $key => $value)
+                            // filter the control's value for XSS injection and/or convert applicable characters to their equivalent HTML entities
+                            $this->submitted_value[$key] = htmlspecialchars(!$attribute['disable_xss_filters'] ? $this->sanitize($value) : $value);
 
-                                // filter the control's value for XSS injection
-                                $this->submitted_value[$key] = htmlspecialchars($this->sanitize($value));
+                    // if submitted value is not an array, filter the control's value for XSS injection and/or convert applicable characters to their equivalent HTML entities
+                    else $this->submitted_value = htmlspecialchars(!$attribute['disable_xss_filters'] ? $this->sanitize($this->submitted_value) : $this->submitted_value);
 
-                        // if submitted value is not an array, filter the control's value for XSS injection
-                        else $this->submitted_value = htmlspecialchars($this->sanitize($this->submitted_value));
-
-                        // set the respective $_POST/$_GET value to the filtered value
-                        $method[$attribute['name']] = $this->submitted_value;
-
-                    }
+                    // set the respective $_POST/$_GET value to the filtered value
+                    $method[$attribute['name']] = $this->submitted_value;
 
                 // if control is a file upload control and a file was indeed uploaded
                 } elseif ($attribute['type'] == 'file' && isset($_FILES[$attribute['name']]))
@@ -744,7 +738,7 @@ class Zebra_Form_Control extends XSS_Clean
      *  // $obj is a reference to a control
      *  $obj->set_rule(
      *       'alphanumeric' => array(
-     *          '-'                                     // allow alphabet, digits and dash
+     *          '-',                                    // allow alphabet, digits and dash
      *          'error',                                // variable to add the error message to
      *          'Only alphanumeric characters allowed!' // error message if value doesn't validate
      *       )
@@ -1124,8 +1118,10 @@ class Zebra_Form_Control extends XSS_Clean
      *  -   <i>$conditions</i> an array of associative arrays where the keys represent the <b>names</b> of form controls
      *      (remember: <i>names</i>, not IDs, and without the square brackets ([]) used for checkbox groups and multiple
      *      selects), while the associated value/values represent the value/values that those controls need to have in
-     *      order for the current control to be validated. <i>Only when all conditions are met, the control's other rules
-     *      will be checked!</i>
+     *      order for the current control to be validated. Notable exceptions are the {@link Zebra_Form_Submit submit}
+     *      and {@link Zebra_Form_Image image} elements, where the associated value must *always* be "click".
+     *
+     *      <i>Only when all conditions are met, the control's other rules will be checked!</i>
      *
      *  -   <i>callback_function_name</i> is the name of an existing JavaScript function which will be executed whenever
      *      the value of any of the controls listed in the "dependencies" rule changes - useful for showing/hiding controls
@@ -1177,6 +1173,9 @@ class Zebra_Form_Control extends XSS_Clean
      *                              'Option 4',
      *                              array('Option 1', 'Option 3')
      *                          ),
+     *
+     *          // the "submit" control having the "btnsubmit" ID is clicked
+     *          'btnsubmit' =>  'click',
      *
      *       ),
      *
@@ -1771,7 +1770,7 @@ class Zebra_Form_Control extends XSS_Clean
      *
      *  where
      *
-     *  -   <i>upload_path</i> the path where to upload the file to (relative to your working path)
+     *  -   <i>upload_path</i> the path where to upload the file to, relative to the currently running script.
      *
      *  -   <i>file_name</i>: specifies whether the uploaded file's original name should be preserved, should it be
      *      prefixed with a string, or should it be randomly generated.
@@ -1795,11 +1794,9 @@ class Zebra_Form_Control extends XSS_Clean
      *
      *  <i>Remember to check the form's {@link Zebra_Form::$file_upload_permissions $file_upload_permissions} property
      *  for how to set the filesystem permissions of the uploaded files!</i>
-
-     *  <i>Note that once this rule is run client-side, the DOM element it is attached to will get an attribute called</i>
-     *  <b>file_info</b> <i>which will contain information about the uploaded file, usable in the JavaScript part of a
-     *  custom function. In the JavaScript part of a custom rule, run after the "upload" rule, you could use Firebug's
-     *  console tab to see the values of 'file_info':</i>
+     *
+     *  <i>Note that once this rule is run client-side, the DOM element the rule is attached to, will get a data-attribute
+     *  called</i> <b>file_info</b> <i>which will contain information about the uploaded file, accessible via JavaScript.</i>
      *
      *  <code>
      *  console.log($('#element_id').data('file_info'))

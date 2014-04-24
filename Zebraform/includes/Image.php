@@ -1,19 +1,17 @@
-    <?php
+<?php
 
 /**
- *  Class for button controls.
+ *  Class for image controls.
  *
  *  @author     Stefan Gabos <contact@stefangabos.ro>
  *  @copyright  (c) 2006 - 2013 Stefan Gabos
  *  @package    Controls
  */
-class Zebra_Form_Button extends Zebra_Form_Control
+class Zebra_Form_Image extends Zebra_Form_Control
 {
 
     /**
-     *  Constructor of the class
-     *
-     *  Adds an <input type="button"> control to the form.
+     *  Adds an <input type="image"> control to the form.
      *
      *  <b>Do not instantiate this class directly! Use the {@link Zebra_Form::add() add()} method instead!</b>
      *
@@ -21,8 +19,8 @@ class Zebra_Form_Button extends Zebra_Form_Control
      *  // create a new form
      *  $form = new Zebra_Form('my_form');
      *
-     *  // add a button to the form
-     *  $obj = $form->add('button', 'my_button', 'Click me!');
+     *  // add an image control to the form
+     *  $obj = $form->add('image', 'my_image', 'path/to/image');
      *
      *  // don't forget to always call this method before rendering the form
      *  if ($form->validate()) {
@@ -45,11 +43,11 @@ class Zebra_Form_Button extends Zebra_Form_Control
      *
      *                                  <code>
      *                                  // in a template file, in order to print the generated HTML
-     *                                  // for a control named "my_button", one would use:
-     *                                  echo $my_button;
+     *                                  // for a control named "my_image", one would use:
+     *                                  echo $my_image;
      *                                  </code>
      *
-     *  @param  string  $caption        Caption of the button control.
+     *  @param  string  $src            (Optional) Path to an image file.
      *
      *  @param  array   $attributes     (Optional) An array of attributes valid for
      *                                  {@link http://www.w3.org/TR/REC-html40/interact/forms.html#h-17.4 input}
@@ -59,11 +57,11 @@ class Zebra_Form_Button extends Zebra_Form_Control
      *                                  <code>
      *                                  // setting the "alt" attribute
      *                                  $obj = $form->add(
-     *                                      'button',
-     *                                      'my_button',
-     *                                      'Click me!',
+     *                                      'image',
+     *                                      'my_image',
+     *                                      'path/to/image',
      *                                      array(
-     *                                          'alt' => 'Click this button!'
+     *                                          'alt' => 'Click to submit form'
      *                                      )
      *                                  );
      *                                  </code>
@@ -73,11 +71,12 @@ class Zebra_Form_Button extends Zebra_Form_Control
      *
      *                                  The following attributes are automatically set when the control is created and
      *                                  should not be altered manually:<br>
-     *                                  <b>type</b>, <b>id</b>, <b>name</b>, <b>value</b>, <b>class</b>
+     *
+     *                                  <b>type</b>, <b>id</b>, <b>name</b>, <b>src</b>, <b>class</b>
      *
      *  @return void
      */
-    function __construct($id, $caption, $attributes = '')
+    function __construct($id, $src, $attributes = '')
     {
     
         // call the constructor of the parent class
@@ -93,19 +92,22 @@ class Zebra_Form_Button extends Zebra_Form_Control
 
         );
 
-        // set the default attributes for the button control
+        // set the default attributes for the image control
         // put them in the order you'd like them rendered
         $this->set_attributes(
 
-            array(
-                'type'  =>  'submit',
-                'name'  =>  $id,
-                'id'    =>  $id,
-                'value' =>  $caption,
-                'class' =>  'button',
-            )
+			array(
 
-        );
+                'alt'   =>  $id,
+                'class' =>  'image',
+                'id'    =>  $id,
+                'name'  =>  $id,
+                'src'   =>  $src,
+			    'type'  =>  'image',
+
+			)
+
+	    );
 
         // if "class" is amongst user specified attributes
         if (is_array($attributes) && isset($attributes['class'])) {
@@ -118,7 +120,7 @@ class Zebra_Form_Button extends Zebra_Form_Control
 
         }
 
-        // sets user specified attributes for the control
+        // sets user specified attributes for the table cell
         $this->set_attributes($attributes);
 
     }
@@ -132,11 +134,11 @@ class Zebra_Form_Button extends Zebra_Form_Control
      */
     function toHTML()
     {
-    
+
         return '<input ' . $this->_render_attributes() . ($this->form_properties['doctype'] == 'xhtml' ? '/' : '') . '>';
 
     }
-    
+
 }
 
 ?>

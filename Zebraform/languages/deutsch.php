@@ -18,6 +18,7 @@ $this->language = array(
     'other'         => 'Sonstige...',
     'select'        => '- wählen -',
     'spam_detected' => 'Es besteht der Verdacht auf einen Spamversuch. Ihre Anfrage wird ignoriert.',
+    'today'         => 'Heute',
 );
 
 ?>

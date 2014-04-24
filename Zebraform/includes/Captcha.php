@@ -21,6 +21,12 @@ class Zebra_Form_Captcha extends Zebra_Form_Control
      *
      *  Properties of the CAPTCHA image can be altered by editing the file includes/captcha.php.
      *
+     *  By default, captcha values are triple md5 hashed and stored in cookies, and when the user enters the captcha
+     *  value the value is also triple md5 hashed and the two values are then compared. Sometimes, your users may have
+     *  a very restrictive cookie policy and so cookies will not be set, and therefore they will never be able to get
+     *  past the CAPTCHA control. If it's the case, call the {@link Zebra_Form::captcha_storage() captcha_storage}
+     *  method and set the storage method to "session".
+     *
      *  <code>
      *  // create a new form
      *  $form = new Zebra_Form('my_form');

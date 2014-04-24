@@ -100,12 +100,12 @@ class Zebra_Form_Date extends Zebra_Form_Control
             'disable_xss_filters',
             'disable_zebra_datepicker',
             'date',
-            'always_show_clear',
             'always_visible',
             'days',
             'days_abbr',
             'direction',
             'disabled_dates',
+            'enabled_dates',
             'first_day_of_week',
             'format',
             'inside_icon',
@@ -115,7 +115,11 @@ class Zebra_Form_Date extends Zebra_Form_Control
             'offset',
             'pair',
             'readonly_element',
+            'show_clear_date',
+            'show_other_months',
+            'show_select_today',
             'show_week_number',
+            'select_other_months',
             'start_date',
             'view',
             'weekend_days',
@@ -127,12 +131,12 @@ class Zebra_Form_Date extends Zebra_Form_Control
         // these attributes will be used by the JavaScript date picker object
         $this->javascript_attributes = array(
 
-            'always_show_clear',
             'always_visible',
             'days',
             'days_abbr',
-            'disabled_dates',
             'direction',
+            'disabled_dates',
+            'enabled_dates',
             'first_day_of_week',
             'format',
             'inside_icon',
@@ -142,7 +146,11 @@ class Zebra_Form_Date extends Zebra_Form_Control
             'offset',
             'pair',
             'readonly_element',
+            'show_clear_date',
+            'show_other_months',
+            'show_select_today',
             'show_week_number',
+            'select_other_months',
             'start_date',
             'view',
             'weekend_days',
@@ -162,13 +170,13 @@ class Zebra_Form_Date extends Zebra_Form_Control
                 'value'                     =>  $default,
                 'class'                     =>  'control text date',
 
-                'always_show_clear'         =>  null,
                 'always_visible'            =>  null,
                 'days'                      =>  null,
                 'days_abbr'                 =>  null,
                 'direction'                 =>  null,
                 'disable_zebra_datepicker'  =>  false,
                 'disabled_dates'            =>  null,
+                'enabled_dates'             =>  null,
                 'first_day_of_week'         =>  null,
                 'format'                    =>  'Y-m-d',
                 'inside_icon'               =>  null,
@@ -177,7 +185,11 @@ class Zebra_Form_Date extends Zebra_Form_Control
                 'offset'                    =>  null,
                 'pair'                      =>  null,
                 'readonly_element'          =>  null,
+                'show_clear_date'           =>  null,
+                'show_other_months'         =>  null,
+                'show_select_today'         =>  null,
                 'show_week_number'          =>  null,
+                'select_other_months'       =>  null,
                 'start_date'                =>  null,
                 'view'                      =>  null,
                 'weekend_days'              =>  null,
@@ -200,28 +212,6 @@ class Zebra_Form_Date extends Zebra_Form_Control
 
         // sets user specified attributes for the control
         $this->set_attributes($attributes);
-
-    }
-
-    /**
-     *  Should the "Clear" button be always visible?
-     *
-     *  By default, the button for clearing a previously selected date is shown only if a previously selected date already
-     *  exists; this means that if the input the date picker is attached to is empty, and the user selects a date for the
-     *  first time, this button will not be visible; once the user picked a date and opens the date picker again, this
-     *  time the button will be visible.
-     *
-     *  The caption of the button can be changed in the {@link Zebra_Form::language language} file.
-     *
-     *  Setting this property to TRUE will make this button visible all the time.
-     *
-     *  @return void
-     */
-    function always_show_clear()
-    {
-
-        // set the date picker's attribute
-        $this->set_attributes(array('always_show_clear' => true));
 
     }
 
@@ -328,27 +318,27 @@ class Zebra_Form_Date extends Zebra_Form_Control
      *  $obj = $form->add('date', 'mydate')
      *
      *  // disable January 1, 2012
-     *  $obj->disabled_date(array('1 1 2012'));
+     *  $obj->disabled_dates(array('1 1 2012'));
      *
      *  // disable all days in January 2012
-     *  $obj->disabled_date(array('* 1 2012'));
+     *  $obj->disabled_dates(array('* 1 2012'));
      *
      *  // disable January 1 through 10 in 2012
-     *  $obj->disabled_date(array('1-10 1 2012'));
+     *  $obj->disabled_dates(array('1-10 1 2012'));
      *
      *  // disable January 1 and 10 in 2012
-     *  $obj->disabled_date(array('1,10 1 2012'));
+     *  $obj->disabled_dates(array('1,10 1 2012'));
      *
      *  // disable 1 through 10, and then 20th, 22nd and 24th
      *  // of January through March for every year
-     *  $obj->disabled_date(array('1-10,20,22,24 1-3 *'));
+     *  $obj->disabled_dates(array('1-10,20,22,24 1-3 *'));
      *
      *  // disable all Saturdays and Sundays
-     *  $obj->disabled_date(array('* * * 0,6'));
+     *  $obj->disabled_dates(array('* * * 0,6'));
      *
      *  // disable 1st and 2nd of July 2012,
      *  // and all of August of 2012;
-     *  $obj->disabled_date(array('01 07 2012', '02 07 2012', '* 08 2012'));
+     *  $obj->disabled_dates(array('01 07 2012', '02 07 2012', '* 08 2012'));
      *  </code>
      *
      *  @param  array   $disabled_dates     An array of strings representing disabled dates. Values in the string have
@@ -387,6 +377,30 @@ class Zebra_Form_Date extends Zebra_Form_Control
     function disable_zebra_datepicker() {
 
         $this->set_attributes(array('disable_zebra_datepicker' => true));
+
+    }
+
+    /**
+     *  Enables selection of specific dates or range of dates in the calendar, after dates have been previously disabled
+     *  via {@link disabled_dates()}.
+     *
+     *  @param  array   $enabled_dates      An array of enabled dates in the same format as required for as argument for
+     *                                      the {@link disabled_dates()} method. To be used together with
+     *                                      {@link disabled_dates()} by first setting "disabled_dates" to something like
+     *                                      array('* * * *') (which will disable everything) and then setting "enabled_dates"
+     *                                      to, say, array('* * * 0,6') to enable just weekends.
+     *
+     *                                      Default is FALSE, all dates are enabled (unless, specificaly disabled via
+     *                                      {@link disabled_dates()}).
+     *
+     *  @since 2.9.3
+     *
+     *  @return void
+     */
+    function enabled_dates($enabled_dates) {
+
+        // set the date picker's attribute
+        $this->set_attributes(array('enabled_dates' => $enabled_dates));
 
     }
 
@@ -480,7 +494,7 @@ class Zebra_Form_Date extends Zebra_Form_Control
      *  @param  array  $value       An array indicating the offset, in pixels (x, y), to shift the date picker’s position
      *                              relative to the top-left of the icon that toggles the date picker.
      *
-     *                              Default is array(20, -5).
+     *                              Default is array(5, -5).
      *
      *  @return void
      */
@@ -528,7 +542,7 @@ class Zebra_Form_Date extends Zebra_Form_Control
     function pair($value) {
 
         // set the date picker's attribute
-        $this->set_attributes(array('pair' => $value));
+        $this->set_attributes(array('pair' => '$(\'#' . $value . '\')'));
 
     }
 
@@ -548,6 +562,97 @@ class Zebra_Form_Date extends Zebra_Form_Control
 
         // set the date picker's attribute
         $this->set_attributes(array('readonly_element' => $value));
+
+    }
+
+    /**
+     *  Should days from previous and/or next month be selectable when visible?
+     *
+     *  @param  string  $value      The setting's value
+     *
+     *                              Note that if set to TRUE, the value of {@link show_other_months()} will be considered
+     *                              TRUE regardless of the actual value!
+     *
+     *                              Default is TRUE.
+     *
+     *  @since 2.9.3
+     *
+     *  @return void
+     */
+    function select_other_months($value) {
+
+        // set the date picker's attribute
+        $this->set_attributes(array('select_other_months' => $value));
+
+    }
+
+    /**
+     *  Should the "Clear date" button be visible?
+     *
+     *  @param  string  $value      The setting's value
+     *
+     *                              Accepted values are:
+     *
+     *                              -   0 (zero) – the button for clearing a previously selected date is shown only if a
+     *                                  previously selected date already exists; this means that if the input the date
+     *                                  picker is attached to is empty, and the user selects a date for the first time,
+     *                                  this button will not be visible; once the user picked a date and opens the date
+     *                                  picker again, this time the button will be visible.
+     *
+     *                              -   TRUE will make the button visible all the time
+     *
+     *                              -   FALSE will disable the button
+     *
+     *                              Default is "0" (without quotes)
+     *
+     *  @return void
+     */
+    function show_clear_date($value = 0)
+    {
+
+        // set the date picker's attribute
+        $this->set_attributes(array('show_clear_date' => $value));
+
+    }
+
+    /**
+     *  Should days from previous and/or next month be visible?
+     *
+     *  @param  string  $value      The setting's value
+     *
+     *                              Default is TRUE.
+     *
+     *  @since 2.9.3
+     *
+     *  @return void
+     */
+    function show_other_months($value = true) {
+
+        // set the date picker's attribute
+        $this->set_attributes(array('show_other_months' => $value));
+
+    }
+
+    /**
+     *  Should the "Today" button be visible?
+     *
+     *  @param  string  $value      The setting's value
+     *
+     *                              Setting this property to anything but a boolean FALSE will enable the button and
+     *                              will use the property's value as caption for the button; setting it to FALSE will
+     *                              disable the button.
+     *
+     *                              Default is "Today"
+     *
+     *  @since 2.9.4
+     *
+     *  @return void
+     */
+    function show_select_today($value = 'Today')
+    {
+
+        // set the date picker's attribute
+        $this->set_attributes(array('show_select_today' => $value));
 
     }
 
@@ -1145,10 +1250,10 @@ class Zebra_Form_Date extends Zebra_Form_Control
                 if ($valid) {
 
                     // if date format does not include day make day = 1
-                    if (!isset($original_day)) $original_day = 1;
+                    if (!isset($original_day) || $original_day == 0) $original_day = 1;
 
-                    // if date format does not include month make month = 1
-                    if (!isset($original_month)) $original_month = 1;
+                    // if date format does not include month make month = 0 (January)
+                    if (!isset($original_month)) $original_month = 0;
 
                     // if date is still valid after we process it with strtotime
                     // (we do this because, so far, a date like "Feb 31 2010" would be valid

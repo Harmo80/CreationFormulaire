@@ -19,6 +19,7 @@ $this->language = array(
     'other'         => 'Autre...',
     'select'        => '- Sélectionner -',
     'spam_detected' => 'Une tentative de SPAM à été détectée. Votre requête est ignorée. ',
+    'today'         => 'Aujourd\'hui',
 
 );
 
