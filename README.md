@@ -12,7 +12,7 @@ Pure PHP. No framework, no bullshit.
 Architecture
 
 * index.php : Affichage de la page d'accueil ou du formulaire désiré (id passé en GET).
-* create.php : Page de création de formulaire en plusieurs étapes (step passé en GET). 
+* create.php : Page de création de formulaire en plusieurs étapes (step passé en GET).
 * Une base de données
 * Lbrairie Zebra_Form (PHP/jQuery)
 
@@ -20,18 +20,22 @@ Architecture
 
 Changelog et ToDoList
 
-[Fix][DOING] Vérification et protection des arguments en GET et des différentes étapes de création de formulaire.
+Doing 
 
+[Fix] Vérification et protection des arguments en GET et des différentes étapes de création de formulaire.
 
-[Enh][TODO] Stylisation de l'interface de création.
+[Fix] Correction des élèments obligatoires qui ne fonctionnent pas pour l'instant. Oubli d'un set_rules(). Modification des set_rules().
 
-[Enh][TODO] Stylisation de la page d'accueil et de la page formulaire.
+ToDo
 
-[Fix][TODO] Correction des élèments dépendants qui ne fonctionnent pas. 
+[Enh] Stylisation de l'interface de création.
 
-[Enh][TODO] Enregistrement des résultats en Base de données ou envois par mail, au choix. Affichage par graphique ou simple.
+[Enh] Stylisation de la page d'accueil et de la page formulaire.
 
-[Enh][TODO] Ajout Mdp (pour le créateur) pour consulter les résultats d'un formulaire. 
+[Enh] Enregistrement des résultats en Base de données ou envois par mail, au choix. Affichage par graphique ou simple.
 
+[Enh] Ajout Mdp (pour le créateur) pour consulter les résultats d'un formulaire. 
 
-[Enh][DONE] Ajout d'une page d'accueil.
+Done
+
+[Enh] Ajout d'une page d'accueil.
