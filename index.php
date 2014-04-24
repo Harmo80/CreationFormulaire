@@ -8,7 +8,7 @@
 	*/
 
 	/* Inclusion de la librairie ZebraForm */
-	require 'zebra_form.2.9.1/Zebra_Form.php';
+	require 'Zebraform/Zebra_Form.php';
 
 	/* Initialisation de la session ... */ 
 	session_start(); 
@@ -32,9 +32,9 @@
     <head>
         <title> CreaForm By Harmo </title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
-        <link rel="stylesheet" href="zebra_form.2.9.1/public/css/zebra_form.css">
-        <script src="zebra_form.2.9.1/public/javascript/jquery.js"></script>
-        <script src="zebra_form.2.9.1/public/javascript/zebra_form.js"></script>
+        <link rel="stylesheet" href="Zebraform/styles/zebra_form.css">
+        <script src="jquery.js"></script>
+        <script src="Zebraform/zebra_form.js"></script>
  		 <script type="text/javascript">
 		    function mycallback(valid, label) {
 		    	if (valid) {
@@ -86,7 +86,14 @@
 			$r = $res->execute();
 			$l = $res->fetch();
 
+			if(!isset($l['NOM'])) {
+				header('Location: index.php');
+			}
+
+			echo utf8_encode('<h1>'.$l['TITRE'].'</h1>');
+
 			$form = new Zebra_Form($l['NOM']);
+			$form->language("francais");
 
 			$sql = "SELECT * FROM form_item WHERE ID_FORM = :num ORDER BY POSITION";
 			$res = $db->prepare($sql);
@@ -106,44 +113,48 @@
 			{
 				switch($o['TYPE']) {
 					case 'date': 
-						$form->add('label', 'label_'.$o['NOM'].'', $o['NOM'], $o['TITRE']);
+						$form->add('label', 'label_'.$o['NOM'].'', $o['NOM'], utf8_encode($o['TITRE']));
 						$obj = $form->add('date', $o['NOM']);
-						$obj->set_rule(
-							array(
-					     	'date' => array(
-						        'error',        // variable to add the error message to
-						        'Invalid date!' // error message if value doesn't validate
-					     		),
-					     	'dependencies' => array(
-					     		array(
-					     			$o['DEP_NOM'] => $o['DEP_VALUE']
-					     			), 'mycallback, label_'.$o['NOM'].''
-					     		) 
-					     	)
-					     );
+
+						$rules = array();
+						$rules['date'] = array('error', 'Date invalide !');
+						if($o['DEP_NOM']!='') {
+							$rules['dependencies'] = array(array($o['DEP_NOM'] => $o['DEP_VALUE']), 'mycallback, label_'.$o['NOM'].'');
+						}
+						if($o['REQUIRED'] == "OUI") {
+							$rules['required'] = array("error", "Champ requis !");
+						}
+						$obj->set_rule($rules);
 					break;
 					case 'email': 
-						$form->add('label', 'label_'.$o['NOM'].'', $o['NOM'], $o['TITRE']);
+						$form->add('label', 'label_'.$o['NOM'].'', $o['NOM'], utf8_encode($o['TITRE']));
 						$obj = $form->add('text', $o['NOM']);
-						$obj->set_rule(array(
-							'email' => array(
-					        'error',                    // variable to add the error message to
-					        'Format de mail invalide!'    // error message if value doesn't validate
-					     	),
-					     'dependencies' => array(array(
-					     	$o['DEP_NOM'] => $o['DEP_VALUE']
-					     	), 'mycallback, label_'.$o['NOM'].'') ));
+
+						$rules = array();
+						$rules['email'] = array('error', 'Format de mail invalide!');
+						if($o['DEP_NOM']!='') {
+							$rules['dependencies'] = array(array($o['DEP_NOM'] => $o['DEP_VALUE']), 'mycallback, label_'.$o['NOM'].'');
+						}
+						if($o['REQUIRED'] == "OUI") {
+							$rules['required'] = array("error", "Champ requis !");
+						}
+						$obj->set_rule($rules);
 					break;
 					case 'texte':
-						$form->add('label', 'label_'.$o['NOM'].'', $o['NOM'], $o['TITRE']);
+						$form->add('label', 'label_'.$o['NOM'].'', $o['NOM'], utf8_encode($o['TITRE']));
 						$obj = $form->add('text', $o['NOM']);
-						$obj->set_rule(array(
-					     'dependencies' => array(array(
-					     	$o['DEP_NOM'] => $o['DEP_VALUE']
-					     	), 'mycallback, label_'.$o['NOM'].'') ));
+
+						$rules = array();
+						if($o['DEP_NOM']!='') {
+							$rules['dependencies'] = array(array($o['DEP_NOM'] => $o['DEP_VALUE']), 'mycallback, label_'.$o['NOM'].'');
+						}
+						if($o['REQUIRED'] == "OUI") {
+							$rules['required'] = array("error", "Champ requis !");
+						}
+						$obj->set_rule($rules);
 					break;
 					case 'select': 
-						$form->add('label', 'label_'.$o['NOM'].'', $o['NOM'], $o['TITRE']);
+						$form->add('label', 'label_'.$o['NOM'].'', $o['NOM'], utf8_encode($o['TITRE']));
 						$obj = $form->add('select', $o['NOM']);
 						$options = explode("\n", $o['VALUE']);
 
@@ -153,13 +164,18 @@
 						}
 
 						$obj->add_options($option);
-						$obj->set_rule(array(
-					     'dependencies' => array(array(
-					     	$o['DEP_NOM'] => $o['DEP_VALUE']
-					     	), 'mycallback, label_'.$o['NOM'].'') ));
+
+						$rules = array();
+						if($o['DEP_NOM']!='') {
+							$rules['dependencies'] = array(array($o['DEP_NOM'] => $o['DEP_VALUE']), 'mycallback, label_'.$o['NOM'].'');
+						}
+						if($o['REQUIRED'] == "OUI") {
+							$rules['required'] = array("error", "Champ requis !");
+						}
+						$obj->set_rule($rules);
 					break;
 					case 'radio': 
-						$form->add('label', 'label_'.$o['NOM'].'', $o['NOM'], $o['TITRE']);
+						$form->add('label', 'label_'.$o['NOM'].'', $o['NOM'], utf8_encode($o['TITRE']));
 						$options = explode("\n", $o['VALUE']);
 
 						foreach($options as $opt) {
@@ -169,13 +185,17 @@
 
 						$obj = $form->add('radios', $o['NOM'], $option);
 
-						$obj->set_rule(array(
-					     'dependencies' => array(array(
-					     	$o['DEP_NOM'] => $o['DEP_VALUE']
-					     	), 'mycallback, label_'.$o['NOM'].'') ));
+						$rules = array();
+						if($o['DEP_NOM']!='') {
+							$rules['dependencies'] = array(array($o['DEP_NOM'] => $o['DEP_VALUE']), 'mycallback, label_'.$o['NOM'].'');
+						}
+						if($o['REQUIRED'] == "OUI") {
+							$rules['required'] = array("error", "Champ requis !");
+						}
+						$obj->set_rule($rules);
 					break;
 					case 'checkbox':
-						$form->add('label', 'label_'.$o['NOM'].'', $o['NOM'], $o['TITRE']);
+						$form->add('label', 'label_'.$o['NOM'].'', $o['NOM'], utf8_encode($o['TITRE']));
 						$options = explode("\n", $o['VALUE']);
 
 						foreach($options as $opt) {
@@ -185,79 +205,87 @@
 
 						$obj = $form->add('checkboxes', $o['NOM'], $option);
 
-						$obj->set_rule(array(
-					     'dependencies' => array(array(
-					     	$o['DEP_NOM'] => $o['DEP_VALUE']
-					     	), 'mycallback, label_'.$o['NOM'].'') ));
+						$rules = array();
+						if($o['DEP_NOM']!='') {
+							$rules['dependencies'] = array(array($o['DEP_NOM'] => $o['DEP_VALUE']), 'mycallback, label_'.$o['NOM'].'');
+						}
+						if($o['REQUIRED'] == "OUI") {
+							$rules['required'] = array("error", "Champ requis !");
+						}
+						$obj->set_rule($rules);
 					break;
 					case 'file':
-						$form->add('label', 'label_'.$o['NOM'].'', $o['NOM'], $o['TITRE']);
+						$form->add('label', 'label_'.$o['NOM'].'', $o['NOM'], utf8_encode($o['TITRE']));
 						$obj = $form->add('file', $o['NOM']);
-						$obj->set_rule(array(
-					     'dependencies' => array(array(
-					     	$o['DEP_NOM'] => $o['DEP_VALUE']
-					     	), 'mycallback, label_'.$o['NOM'].''),
-					     'upload' => array(
-					        'tmp',                              // path to upload file to
-					        ZEBRA_FORM_UPLOAD_RANDOM_NAMES,     // upload file with random-generated name
-					        'error',                            // variable to add the error message to
-					        'File could not be uploaded!'       // error message if value doesn't validate
-					     )
-      					));
+
+						$rules = array();
+						if($o['DEP_NOM']!='') {
+							$rules['dependencies'] = array(array($o['DEP_NOM'] => $o['DEP_VALUE']), 'mycallback, label_'.$o['NOM'].'');
+						}
+						$rules['upload'] = array('file_upload', ZEBRA_FORM_UPLOAD_RANDOM_NAMES, 'error', 'File could not be uploaded!');
+						if($o['REQUIRED'] == "OUI") {
+							$rules['required'] = array("error", "Champ requis !");
+						}
+						$obj->set_rule($rules);
 					break;
 					case 'password':
-						$form->add('label', 'label_'.$o['NOM'].'', $o['NOM'], $o['TITRE']);
+						$form->add('label', 'label_'.$o['NOM'].'', $o['NOM'], utf8_encode($o['TITRE']));
 						$obj = $form->add('password', $o['NOM']);
-						$obj->set_rule(array(
-					     'dependencies' => array(array(
-					     	$o['DEP_NOM'] => $o['DEP_VALUE']
-					     	), 'mycallback, label_'.$o['NOM'].'') ));
+
+						$rules = array();
+						if($o['DEP_NOM']!='') {
+							$rules['dependencies'] = array(array($o['DEP_NOM'] => $o['DEP_VALUE']), 'mycallback, label_'.$o['NOM'].'');
+						}
+						if($o['REQUIRED'] == "OUI") {
+							$rules['required'] = array("error", "Champ requis !");
+						}
+						$obj->set_rule($rules);
 					break;
 					case 'textarea':
-						$form->add('label', 'label_'.$o['NOM'].'', $o['NOM'], $o['TITRE']);
+						$form->add('label', 'label_'.$o['NOM'].'', $o['NOM'], utf8_encode($o['TITRE']));
 						$obj = $form->add('textarea', $o['NOM']);
-						$obj->set_rule(array(
-					     'dependencies' => array(array(
-					     	$o['DEP_NOM'] => $o['DEP_VALUE']
-					     	), 'mycallback, label_'.$o['NOM'].'') ));
+
+						$rules = array();
+						if($o['DEP_NOM']!='') {
+							$rules['dependencies'] = array(array($o['DEP_NOM'] => $o['DEP_VALUE']), 'mycallback, label_'.$o['NOM'].'');
+						}
+						if($o['REQUIRED'] == "OUI") {
+							$rules['required'] = array("error", "Champ requis !");
+						}
+						$obj->set_rule($rules);
 					break;
 					case 'time':
-						$form->add('label', 'label_'.$o['NOM'].'', $o['NOM'], $o['TITRE']);
+						$form->add('label', 'label_'.$o['NOM'].'', $o['NOM'], utf8_encode($o['TITRE']));
 						$obj = $form->add('time', $o['NOM'], date('H:i'), array('format' => 'hm'));
-						$obj->set_rule(array(
-					     	'dependencies' => array(
-					     		array(
-					     			$o['DEP_NOM'] => $o['DEP_VALUE']
-					     			), 'mycallback, label_'.$o['NOM'].''
-					     		) 
-					     	)
-					     );
-					break;
-				}
 
-				if($o['REQUIRED']=='OUI')
-				{
-					$obj->set_rule(array('required'=>array('error', $o['ERROR'])));
+						$rules = array();
+						if($o['DEP_NOM']!='') {
+							$rules['dependencies'] = array(array($o['DEP_NOM'] => $o['DEP_VALUE']), 'mycallback, label_'.$o['NOM'].'');
+						}
+						if($o['REQUIRED'] == "OUI") {
+							$rules['required'] = array("error", "Champ requis !");
+						}
+						$obj->set_rule($rules);
+					break;
 				}
 
 				if($o['NOTE']!='') 
 				{
-					$form->add('note', 'note_'.$o['NOM'].'', $o['NOM'], $o['NOTE']);
+					$form->add('note', 'note_'.$o['NOM'].'', $o['NOM'], utf8_encode($o['NOTE']));
 				}
 			} 
 			/*
 			** FIN DU MEGA FOREACH
 			**
 			*/
-			$obj = $form->add('submit', 'my_submit', 'Submit');
+			$obj = $form->add('submit', 'my_submit', 'Valider');
 			// validate the form
 			if ($form->validate()) {
-			    echo "SUBMITTED ! ";
+			    echo "<h1> Merci </h1> <p> Votre participation a bien été enregistrée ! </p>";
 			}
-			// auto generate output, labels above form elements
-			$form->render();
+			echo $form->render();
 
-			echo "<p> <a href='frontend.php'> Retour a l'accueil </a> </p>";
+			echo "<p> <a href='index.php'> Retour a l'accueil </a> </p>";
 
 		}
 		?>

@@ -24,8 +24,6 @@ Doing
 
 [Fix] Vérification et protection des arguments en GET et des différentes étapes de création de formulaire.
 
-[Fix] Correction des élèments obligatoires qui ne fonctionnent pas pour l'instant. Oubli d'un set_rules(). Modification des set_rules().
-
 ToDo
 
 [Enh] Stylisation de l'interface de création.
@@ -39,3 +37,5 @@ ToDo
 Done
 
 [Enh] Ajout d'une page d'accueil.
+
+[Fix] Correction des élèments obligatoires qui ne fonctionnent pas pour l'instant. Oubli d'un set_rules(). Modification des set_rules().
