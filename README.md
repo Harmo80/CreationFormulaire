@@ -22,7 +22,9 @@ Changelog et ToDoList
 
 Doing 
 
-[Fix] Vérification et protection des arguments en GET et des différentes étapes de création de formulaire.
+[Enh] Enregistrement des résultats en Base de données ou envois par mail, au choix. Affichage par graphique ou simple.
+
+[Enh] Ajout Mdp (pour le créateur) pour consulter les résultats d'un formulaire. 
 
 ToDo
 
@@ -30,12 +32,10 @@ ToDo
 
 [Enh] Stylisation de la page d'accueil et de la page formulaire.
 
-[Enh] Enregistrement des résultats en Base de données ou envois par mail, au choix. Affichage par graphique ou simple.
-
-[Enh] Ajout Mdp (pour le créateur) pour consulter les résultats d'un formulaire. 
-
 Done
 
 [Enh] Ajout d'une page d'accueil.
 
 [Fix] Correction des élèments obligatoires qui ne fonctionnent pas pour l'instant. Oubli d'un set_rules(). Modification des set_rules().
+
+[Fix] Vérification et protection des arguments en GET et des différentes étapes de création de formulaire.
